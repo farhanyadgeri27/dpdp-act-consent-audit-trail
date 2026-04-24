@@ -6,6 +6,9 @@ function ConsentList() {
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const recordsPerPage = 10
+
   const navigate = useNavigate()
 
   // fetch all consent records when page loads
@@ -21,6 +24,11 @@ function ConsentList() {
         setLoading(false)
       })
   }, [])
+
+  // pagination logic
+  const totalPages = Math.ceil(records.length / recordsPerPage)
+  const startIndex = (currentPage - 1) * recordsPerPage
+  const currentRecords = records.slice(startIndex, startIndex + recordsPerPage)
 
   // loading state
   if (loading) {
@@ -69,7 +77,7 @@ function ConsentList() {
             </tr>
           </thead>
           <tbody>
-            {records.map((record) => (
+            {currentRecords.map((record) => (
               <tr
                 key={record.id}
                 className="border-b hover:bg-gray-50 transition"
@@ -94,13 +102,51 @@ function ConsentList() {
                 <td className="px-4 py-3">
                   <button
                     onClick={() => navigate(`/edit/${record.id}`)}
-                    className="text-blue-600 hover:underline text-xs font-medium">Edit</button>
+                    className="text-blue-600 hover:underline text-xs font-medium"
+                  >
+                    Edit
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* pagination controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-6">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 rounded border text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40"
+          >
+            Previous
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`px-3 py-1 rounded border text-sm
+                ${currentPage === page
+                  ? "bg-blue-700 text-white border-blue-700"
+                  : "text-gray-600 hover:bg-gray-100"
+                }`}
+            >
+              {page}
+            </button>
+          ))}
+
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 rounded border text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   )
 }
